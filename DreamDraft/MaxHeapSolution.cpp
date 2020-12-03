@@ -36,13 +36,14 @@ int main() {
 	string season, temp, name, pos, score;
 	cout << "enter the season you would like to compute the perfect roster for: ";
 	cin >> season;
-	string filename = "data_v2/yearly/ " + season + ".csv";
+	string filename = "data_v2/yearly/" + season + ".csv";	
 	cout << filename << endl;
 	ifstream seasonStats(filename);
 	if (seasonStats.is_open())
 		cout << "file opened successfully" << endl;
 	else
 		cout << "file not opened" << endl;
+	getline(seasonStats, temp);								// clear first line (headings)
 
 	while (getline(seasonStats, temp, ',')) {				// read in season stats, record starters
 		getline(seasonStats, name, ',');					// reads in player name				
@@ -58,25 +59,25 @@ int main() {
 		}
 		else if (pos == "RB") {
 			RBs[name] = Player(name, seasonTotal);
-			if (seasonTotal > RB1->scores[0] || RB1 == nullptr) {
+			if (RB1 == nullptr || seasonTotal > RB1->scores[0]) {
 				RB2 = RB1;
 				RB1 = &RBs[name];
 			}
-			else if (seasonTotal > RB2->scores[0] || RB2 == nullptr) 
+			else if (RB2 == nullptr || seasonTotal > RB2->scores[0])
 				RB2 = &RBs[name];
 		}
 		else if (pos == "WR") {
 			WRs[name] = Player(name, seasonTotal);
-			if (seasonTotal > WR1->scores[0] || WR1 == nullptr) {
+			if (WR1 == nullptr || seasonTotal > WR1->scores[0]) {
 				WR2 = WR1;
 				WR1 = &WRs[name];
 			}
-			else if (seasonTotal > WR2->scores[0] || WR2 == nullptr) 
+			else if (WR2 == nullptr || seasonTotal > WR2->scores[0])
 				WR2 = &WRs[name];
 		}
 		else if (pos == "TE") {
 			TEs[name] = Player(name, seasonTotal);
-			if (seasonTotal > TE->scores[0] || TE == nullptr)
+			if (TE == nullptr || seasonTotal > TE->scores[0])
 				TE = &TEs[name];
 		}
 	}
