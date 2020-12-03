@@ -36,7 +36,7 @@ int main() {
 	string season, temp, name, pos, score;
 	cout << "enter the season you would like to compute the perfect roster for: ";
 	cin >> season;
-	string filename = "data_v2/yearly/ " + season + ".csv";	// TODO - fix file path so that it opens
+	string filename = "data_v2/yearly/ " + season + ".csv";
 	cout << filename << endl;
 	ifstream seasonStats(filename);
 	if (seasonStats.is_open())
