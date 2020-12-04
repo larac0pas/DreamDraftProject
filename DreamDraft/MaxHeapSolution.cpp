@@ -6,10 +6,10 @@
 #include <queue>
 using namespace std;
 
-struct Player {														// Player object 
+struct Player {											// Player object 
 	string name;
-	double scores[18] = { 0 };										// array of scores, index 0 stores total points for the season, 1-17 store corresponding weekly scores
-	double comp1 = 0, comp2 = 0;									// complement value (points to be gained through substitution) to the starter, comp2 used only for RB2 and WR2
+	double scores[18] = { 0 };								// array of scores, index 0 stores total points for the season, 1-17 store corresponding weekly scores
+	double comp1 = 0, comp2 = 0;								// complement value (points to be gained through substitution) to the starter, comp2 used only for RB2 and WR2
 
 	Player(string name, double total) {
 		this->name = name;
@@ -20,7 +20,7 @@ struct Player {														// Player object
 	}
 };
 
-void calculateComplement(priority_queue<Player*> heap, Player* starter, int week) { // calculates top's complement value/s then removes it from the heap
+void calculateComplement(priority_queue<Player*> heap, Player* starter, int week) {		 // calculates top's complement value/s then removes it from the heap
 	while (!heap.empty()) {
 		double complement = heap.top()->scores[week] - starter->scores[week];
 		if (complement > 0) {
@@ -40,13 +40,13 @@ void calculateComplements(priority_queue<Player*> heap, Player* starter1, Player
 	}
 }
 
-Player* findComplement(unordered_map<string, Player>& players) {	// finds the max complement value (already calculated) in the given map
+Player* findComplement(unordered_map<string, Player>& players) {				// finds the max complement value (already calculated) in the given map
 	double maxComp = 0;
 	Player* sub = nullptr;
 	for (auto it : players) {
 		if (it.second.comp1 > maxComp) {
 			maxComp = it.second.comp1;
-			sub = &players[it.second.name];							// do not change this line - I don't why it works but the entire program is dependent on it 
+			sub = &players[it.second.name];						// do not change this line - I don't why it works but the entire program is dependent on it 
 		}
 	}
 	return sub;
@@ -67,8 +67,8 @@ pair<Player*, Player*> findComplements(unordered_map<string, Player>& players) {
 			sub2a = &players[it.second.name];
 		}
 	}
-	if (sub1a == sub2a) {											// if the same player is the best complement to both starters
-		if (sub1a->comp1 >= sub1a->comp2) {							// the higher complement value is chosen, and the next highest complement to the other starter is chosen
+	if (sub1a == sub2a) {									// if the same player is the best complement to both starters
+		if (sub1a->comp1 >= sub1a->comp2) {						// the higher complement value is chosen, and the next highest complement to the other starter is chosen
 			sub2a = sub2b;
 		}
 		else {
@@ -79,9 +79,9 @@ pair<Player*, Player*> findComplements(unordered_map<string, Player>& players) {
 }
 
 int main() {
-	unordered_map<string, Player> QBs, RBs, WRs, TEs;				// map from player name to their object allows for O(1) lookup by name
-	Player* QB = nullptr, * RB1 = nullptr, * RB2 = nullptr, * WR1 = nullptr, * WR2 = nullptr, * TE = nullptr;				// starters
-	Player* QBc, * RB1c, * RB2c, * WR1c, * WR2c, * TEc;				// complements
+	unordered_map<string, Player> QBs, RBs, WRs, TEs;					// map from player name to their object allows for O(1) lookup by name
+	Player* QB = nullptr, * RB1 = nullptr, * RB2 = nullptr, * WR1 = nullptr, * WR2 = nullptr, * TE = nullptr; // starters
+	Player* QBc, * RB1c, * RB2c, * WR1c, * WR2c, * TEc;					// complements
 
 	// open season file
 	string season, temp, name, pos, score;
@@ -92,13 +92,13 @@ int main() {
 
 
 	// read in season stats, record starters
-	getline(seasonStats, temp);										// clear first line (headings)
+	getline(seasonStats, temp);								// clear first line (headings)
 	while (getline(seasonStats, temp, ',')) {				
-		getline(seasonStats, name, ',');							// reads in player name				
+		getline(seasonStats, name, ',');						// reads in player name				
 		getline(seasonStats, temp, ',');
-		getline(seasonStats, pos, ',');								// reads in position
+		getline(seasonStats, pos, ',');							// reads in position
 		for (int i = 0; i < 23; i++) { getline(seasonStats, temp, ','); }
-		getline(seasonStats, score);								// reads total season score, the last column
+		getline(seasonStats, score);							// reads total season score, the last column
 		double seasonTotal = stod(score);
 		if (pos == "QB") {
 			QBs[name] = Player(name, seasonTotal);
@@ -145,8 +145,8 @@ int main() {
 			getline(weekStats, score, ',');
 			getline(weekStats, temp);
 			if (pos == "QB") {
-				QBs[name].scores[i] = stod(score);					// adds weekly scores to Player arrays
-				if (name != QB->name)								// does not add the starters to the maxHeap
+				QBs[name].scores[i] = stod(score);				// adds weekly scores to Player arrays
+				if (name != QB->name)						// does not add the starters to the maxHeap
 					QBm.push(&QBs[name]);
 			}
 			else if (pos == "RB") {
