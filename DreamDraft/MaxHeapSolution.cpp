@@ -6,10 +6,10 @@
 #include <queue>
 using namespace std;
 
-struct Player {										// Player object 
+struct Player {														// Player object 
 	string name;
-	double scores[18] = { 0 };								// array of scores, index 0 stores total points for the season, 1-17 store corresponding weekly scores
-	double comp1, comp2 = 0;								// complement value (points to be gained through substitution) to the starter, twoC used only for RB2 and WR2
+	double scores[18] = { 0 };										// array of scores, index 0 stores total points for the season, 1-17 store corresponding weekly scores
+	double comp1 = 0, comp2 = 0;									// complement value (points to be gained through substitution) to the starter, comp2 used only for RB2 and WR2
 
 	Player(string name, double total) {
 		this->name = name;
@@ -20,45 +20,85 @@ struct Player {										// Player object
 	}
 };
 
-Player* findComplement(unordered_map<string, Player>& players) {
+void calculateComplement(priority_queue<Player*> heap, Player* starter, int week) { // calculates top's complement value/s then removes it from the heap
+	while (!heap.empty()) {
+		double complement = heap.top()->scores[week] - starter->scores[week];
+		if (complement > 0) {
+			heap.top()->comp1 += complement;
+		}
+		heap.pop();
+	}
+}
+
+void calculateComplements(priority_queue<Player*> heap, Player* starter1, Player* starter2, int week) { // <- for RB/WR (2 starters)
+	while (!heap.empty()) {
+		if ((heap.top()->scores[week] - starter1->scores[week]) > 0)
+			heap.top()->comp1 += (heap.top()->scores[week] - starter1->scores[week]);
+		if ((heap.top()->scores[week] - starter2->scores[week]) > 0)
+			heap.top()->comp2 += (heap.top()->scores[week] - starter2->scores[week]);
+		heap.pop();
+	}
+}
+
+Player* findComplement(unordered_map<string, Player>& players) {	// finds the max complement value (already calculated) in the given map
 	double maxComp = 0;
 	Player* sub = nullptr;
 	for (auto it : players) {
 		if (it.second.comp1 > maxComp) {
 			maxComp = it.second.comp1;
-			sub = &it.second;
+			sub = &players[it.second.name];							// do not change this line - I don't why it works but the entire program is dependent on it 
 		}
 	}
 	return sub;
 }
 
-
+pair<Player*, Player*> findComplements(unordered_map<string, Player>& players) {
+	double maxComp1 = 0, maxComp2 = 0;
+	Player* sub1a = nullptr, * sub1b = nullptr, * sub2a = nullptr, * sub2b = nullptr;
+	for (auto it : players) {
+		if (it.second.comp1 > maxComp1) {
+			maxComp1 = it.second.comp1;
+			sub1b = sub1a;
+			sub1a = &players[it.second.name];
+		}
+		if (it.second.comp2 > maxComp2) {
+			maxComp2 = it.second.comp2;
+			sub2b = sub2a;
+			sub2a = &players[it.second.name];
+		}
+	}
+	if (sub1a == sub2a) {											// if the same player is the best complement to both starters
+		if (sub1a->comp1 >= sub1a->comp2) {							// the higher complement value is chosen, and the next highest complement to the other starter is chosen
+			sub2a = sub2b;
+		}
+		else {
+			sub1a = sub1b;
+		}
+	}
+	return { sub1a, sub2a };
+}
 
 int main() {
-	unordered_map<string, Player> QBs, RBs, WRs, TEs;			// map from player name to their object allows for O(1) lookup by name
+	unordered_map<string, Player> QBs, RBs, WRs, TEs;				// map from player name to their object allows for O(1) lookup by name
 	Player* QB = nullptr, * RB1 = nullptr, * RB2 = nullptr, * WR1 = nullptr, * WR2 = nullptr, * TE = nullptr;				// starters
-	Player* QBc, * RB1c, * RB2c, * WR1c, * WR2c, * TEc;			// complements
+	Player* QBc, * RB1c, * RB2c, * WR1c, * WR2c, * TEc;				// complements
 
 	// open season file
 	string season, temp, name, pos, score;
 	cout << "enter the season you would like to compute the perfect roster for: ";
 	cin >> season;
 	string filename = "data_v2/yearly/" + season + ".csv";
-	cout << filename << endl;
 	ifstream seasonStats(filename);
-	if (seasonStats.is_open())
-		cout << "file opened successfully" << endl;
-	else
-		cout << "file not opened" << endl;
-	getline(seasonStats, temp);								// clear first line (headings)
+
 
 	// read in season stats, record starters
+	getline(seasonStats, temp);										// clear first line (headings)
 	while (getline(seasonStats, temp, ',')) {				
-		getline(seasonStats, name, ',');					// reads in player name				
+		getline(seasonStats, name, ',');							// reads in player name				
 		getline(seasonStats, temp, ',');
-		getline(seasonStats, pos, ',');						// reads in position
+		getline(seasonStats, pos, ',');								// reads in position
 		for (int i = 0; i < 23; i++) { getline(seasonStats, temp, ','); }
-		getline(seasonStats, score);						// reads total season score, the last column
+		getline(seasonStats, score);								// reads total season score, the last column
 		double seasonTotal = stod(score);
 		if (pos == "QB") {
 			QBs[name] = Player(name, seasonTotal);
@@ -92,19 +132,16 @@ int main() {
 
 
 	// open weekly files
-	for (int i = 1; i <= 17; i++) {
-		priority_queue<Player*> QBm, RBm, WRm, TEm;									// create maxHeap of Player* for each position
+	for (int i = 1; i <= 16; i++) {
+		priority_queue<Player*> QBm, RBm, WRm, TEm;					// create maxHeap of Player* for each position
 		filename = "data_v2/weekly/" + season + "/week" + to_string(i) + ".csv";
 		ifstream weekStats(filename);
-		if (weekStats.is_open())
-			cout << "file opened successfully" << endl;
-		else
-			cout << "file not opened" << endl;
+		
 
 		getline(weekStats, temp);
 		while (getline(weekStats, name, ',')) {						// reads weeks data
 			getline(weekStats, pos, ',');
-			for (int j = 0; j < 15; j++) { getline(weekStats, temp, ','); }
+			for (int j = 0; j < 14; j++) { getline(weekStats, temp, ','); }
 			getline(weekStats, score, ',');
 			getline(weekStats, temp);
 			if (pos == "QB") {
@@ -130,39 +167,33 @@ int main() {
 		}
 
 		// for each maxHeap
-			// calculate top's complement values, remove from heap until top has 0 complement value
-		while (QBm.top()->scores[i] - QB->scores[i] > 0 && !QBm.empty()) {
-			QBm.top()->comp1 += QBm.top()->scores[i] - QB->scores[i];
-			QBm.pop();
-		}
-		while ((RBm.top()->scores[i] - RB1->scores[i] > 0 || RBm.top()->scores[i] - RB2->scores[i] > 0) && !RBm.empty()) {
-			if (RBm.top()->scores[i] - RB1->scores[i] > 0)
-				RBm.top()->comp1 += RBm.top()->scores[i] - RB1->scores[i];
-			if (RBm.top()->scores[i] - RB2->scores[i] > 0)
-				RBm.top()->comp2 += RBm.top()->scores[i] - RB2->scores[i];
-			RBm.pop();
-		}
-		while ((WRm.top()->scores[i] - WR1->scores[i] > 0 || WRm.top()->scores[i] - WR2->scores[i] > 0) && !WRm.empty()) {
-			if (WRm.top()->scores[i] - WR1->scores[i] > 0)
-				WRm.top()->comp1 += WRm.top()->scores[i] - WR1->scores[i];
-			if (WRm.top()->scores[i] - WR2->scores[i] > 0)
-				WRm.top()->comp2 += WRm.top()->scores[i] - WR2->scores[i];
-			WRm.pop();
-		}
-		while (TEm.top()->scores[i] - TE->scores[i] > 0 && !TEm.empty()) {
-			TEm.top()->comp1 += TEm.top()->scores[i] - TE->scores[i];
-			TEm.pop();
-		}
+		calculateComplement(QBm, QB, i);
+		calculateComplements(RBm, RB1, RB2, i);
+		calculateComplements(WRm, WR1, WR2, i);
+		calculateComplement(TEm, TE, i);
 	}
+
+
 	QBc = findComplement(QBs);
+	pair<Player*, Player*> RBcs = findComplements(RBs);
+	RB1c = RBcs.first;
+	RB2c = RBcs.second;
+	pair<Player*, Player*> WRcs = findComplements(WRs);
+	WR1c = WRcs.first;
+	WR2c = WRcs.second;
 	TEc = findComplement(TEs);
 
+	cout << "Best possible 16-man roster on draft day: " << endl;
 	cout << "QB: " << QB->name << endl;
-	cout << "QBc: " << QBc->name << endl;
+	cout << "QBc: " << QBc->name << endl; 
 	cout << "RB1: " << RB1->name << endl;
+	cout << "RB1c: " << RB1c->name << endl;
 	cout << "RB2: " << RB2->name << endl;
+	cout << "RB2c: " << RB2c->name << endl;
 	cout << "WR1: " << WR1->name << endl;
+	cout << "WR1c: " << WR1c->name << endl;
 	cout << "WR2: " << WR2->name << endl;
+	cout << "WR2c: " << WR2c->name << endl;
 	cout << "TE: " << TE->name << endl;
 	cout << "TEc: " << TEc->name << endl;
 }
