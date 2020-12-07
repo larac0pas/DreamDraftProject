@@ -183,17 +183,17 @@ int main() {
 	WR2c = WRcs.second;
 	TEc = findComplement(TEs);
 
-	cout << "Best possible 16-man roster on draft day: " << endl;
+	cout << "Best possible 12-player roster on draft day: " << endl;
 	cout << "QB: " << QB->name << endl;
-	cout << "QBc: " << QBc->name << endl; 
+	cout << "QBc: " << QBc->name  << " +" << QBc->comp1 << endl;
 	cout << "RB1: " << RB1->name << endl;
-	cout << "RB1c: " << RB1c->name << endl;
+	cout << "RB1c: " << RB1c->name << " +" << RB1c->comp1 <<endl;
 	cout << "RB2: " << RB2->name << endl;
-	cout << "RB2c: " << RB2c->name << endl;
+	cout << "RB2c: " << RB2c->name << " +" << RB2c->comp2 << endl;
 	cout << "WR1: " << WR1->name << endl;
-	cout << "WR1c: " << WR1c->name << endl;
+	cout << "WR1c: " << WR1c->name << " +" << WR1c->comp1 << endl;
 	cout << "WR2: " << WR2->name << endl;
-	cout << "WR2c: " << WR2c->name << endl;
+	cout << "WR2c: " << WR2c->name << " +" << WR2c->comp2 << endl;
 	cout << "TE: " << TE->name << endl;
-	cout << "TEc: " << TEc->name << endl;
+	cout << "TEc: " << TEc->name << " +" << TEc->comp1 << endl;
 }
