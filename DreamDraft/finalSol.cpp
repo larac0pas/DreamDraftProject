@@ -4,7 +4,10 @@
 #include <fstream>
 #include <unordered_map>
 #include <queue>
+#include <algorithm>
+#include <chrono>
 using namespace std;
+using namespace std::chrono;
 
 struct Player {														// Player object
     string name;
@@ -20,7 +23,7 @@ struct Player {														// Player object
     }
 };
 
-class Map{
+class Map {
 public:
     void calculateComplement(unordered_map<string, Player>& players, Player* starter, int week);
     void calculateComplements(unordered_map<string, Player>& players, Player* starter1, Player* starter2, int week);
@@ -92,7 +95,7 @@ pair<Player*, Player*> Map::findComplements(unordered_map<string, Player>& playe
     return { sub1a, sub2a };
 }
 
-class MaxHeap{
+class MaxHeap {
 public:
     void calculateComplement(priority_queue<Player*> heap, Player* starter, int week);
     void calculateComplements(priority_queue<Player*> heap, Player* starter1, Player* starter2, int week);
@@ -158,7 +161,7 @@ pair<Player*, Player*> MaxHeap::findComplements(unordered_map<string, Player>& p
     return { sub1a, sub2a };
 }
 
-void mapSol(){
+void mapSol() {
     unordered_map<string, Player> QBs, RBs, WRs, TEs;
     Player* QB = nullptr, * RB1 = nullptr, * RB2 = nullptr, * WR1 = nullptr, * WR2 = nullptr, * TE = nullptr;
     Player* QBc, * RB1c, * RB2c, * WR1c, * WR2c, * TEc;
@@ -168,7 +171,7 @@ void mapSol(){
 
     // open season file
     string season, temp, name, pos, score;
-    cout << "Enter the season you would like to compute the perfect roster for: ";
+    cout << "Enter the season you would like to compute the perfect roster for: " << endl;
     cin >> season;
     string filename = "data_v2/yearly/" + season + ".csv";
     ifstream seasonStats(filename);
@@ -255,9 +258,9 @@ void mapSol(){
     cout << endl;
     cout << "Best possible 12-player roster on draft day: " << endl;
     cout << "QB: " << QB->name << endl;
-    cout << "QBc: " << QBc->name  << " +" << QBc->comp1 << endl;
+    cout << "QBc: " << QBc->name << " +" << QBc->comp1 << endl;
     cout << "RB1: " << RB1->name << endl;
-    cout << "RB1c: " << RB1c->name << " +" << RB1c->comp1 <<endl;
+    cout << "RB1c: " << RB1c->name << " +" << RB1c->comp1 << endl;
     cout << "RB2: " << RB2->name << endl;
     cout << "RB2c: " << RB2c->name << " +" << RB2c->comp2 << endl;
     cout << "WR1: " << WR1->name << endl;
@@ -269,7 +272,7 @@ void mapSol(){
     cout << endl;
 }
 
-void heapSol(){
+void heapSol() {
     unordered_map<string, Player> QBs, RBs, WRs, TEs;					// map from player name to their object allows for O(1) lookup by name
     Player* QB = nullptr, * RB1 = nullptr, * RB2 = nullptr, * WR1 = nullptr, * WR2 = nullptr, * TE = nullptr; // starters
     Player* QBc, * RB1c, * RB2c, * WR1c, * WR2c, * TEc;					// complements
@@ -279,7 +282,7 @@ void heapSol(){
 
     // open season file
     string season, temp, name, pos, score;
-    cout << "Enter the season you would like to compute the perfect roster for: ";
+    cout << "Enter the season you would like to compute the perfect roster for: " << endl;
     cin >> season;
     string filename = "data_v2/yearly/" + season + ".csv";
     ifstream seasonStats(filename);
@@ -381,9 +384,9 @@ void heapSol(){
     cout << endl;
     cout << "Best possible 12-player roster on draft day: " << endl;
     cout << "QB: " << QB->name << endl;
-    cout << "QBc: " << QBc->name  << " +" << QBc->comp1 << endl;
+    cout << "QBc: " << QBc->name << " +" << QBc->comp1 << endl;
     cout << "RB1: " << RB1->name << endl;
-    cout << "RB1c: " << RB1c->name << " +" << RB1c->comp1 <<endl;
+    cout << "RB1c: " << RB1c->name << " +" << RB1c->comp1 << endl;
     cout << "RB2: " << RB2->name << endl;
     cout << "RB2c: " << RB2c->name << " +" << RB2c->comp2 << endl;
     cout << "WR1: " << WR1->name << endl;
@@ -397,7 +400,7 @@ void heapSol(){
 
 int main() {
 
-    int input=0;
+    int input = 0;
 
     cout << "Menu:" << endl;
     cout << "1. Hash Map Solution" << endl;
@@ -405,15 +408,27 @@ int main() {
     cout << "3. Exit" << endl;
     cout << endl;
 
-    while(input != 3) {
+    //https://www.geeksforgeeks.org/measure-execution-time-function-cpp/ referenced for execution time
+    while (input != 3) {
         cout << "Please enter the number of which data structure you would like to use: " << endl;
         cin >> input;
         if (input == 1) {
+            auto startTime = high_resolution_clock::now();
             mapSol();
-        } else if (input == 2) {
-            heapSol();
+            auto stopTime = high_resolution_clock::now();
+            auto duration1 = duration_cast<microseconds>(stopTime - startTime);
+            cout << "Time taken to compute map solution: " << duration1.count() << " microseconds" << endl;
+            cout << endl;
         }
-        else if(input ==3){
+        else if (input == 2) {
+            auto startTime = high_resolution_clock::now();
+            heapSol();
+            auto stopTime = high_resolution_clock::now();
+            auto duration1 = duration_cast<microseconds>(stopTime - startTime);
+            cout << "Time taken to compute max heap solution: " << duration1.count() << " microseconds" << endl;
+            cout << endl;
+        }
+        else if (input == 3) {
             break;
         }
         else {
