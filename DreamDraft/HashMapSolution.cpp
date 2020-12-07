@@ -175,7 +175,7 @@ int main() {
 	WR2c = WRcs.second;
 	TEc = findComplement(TEs);
 	
-	cout << "Best possible 16-man roster on draft day: " << endl;
+	cout << "Best possible 12-player roster on draft day: " << endl;
 	cout << "QB: " << QB->name << endl;
 	cout << "QBc: " << QBc->name  << " +" << QBc->comp1 << endl;
 	cout << "RB1: " << RB1->name << endl;
